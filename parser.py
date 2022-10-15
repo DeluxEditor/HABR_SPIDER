@@ -6,6 +6,7 @@ import datetime
 import requests
 import bs4
 import random
+import os
 
 import re
 
@@ -114,7 +115,7 @@ class Crawler:
     # до заданной глубины, индексируя все встречающиеся по пути страницы
     def crawl(self, urlList, maxDepth=1):
 
-        for currDepth in range(0, maxDepth):
+        for currDepth in range(maxDepth):
 
             print("===========Глубина обхода ", currDepth, "=====================================")
             counter = 0  # счетчик обработанных страниц
@@ -125,7 +126,7 @@ class Crawler:
             # шаг-1. Выбрать url-адрес для обработки
 
             # Вар.2. обход НЕСКОЛЬКИХ url на текущей глубине
-            for num in range(0, 5):
+            for num in range(5):
 
                 # шаг-1. Выбрать url-адрес для обработки
                 numUrl = random.randint(0, len(urlList) - 1)  # назначить номер элемента в списке urlList
@@ -170,7 +171,7 @@ class Crawler:
                         nextUrl = tagA.attrs['href']
 
                         # Выбор "подходящих" ссылок => если ссылка начинается с "http"
-                        if nextUrl['href'][0:4] ==  'http':
+                        if nextUrl[0:4] ==  'http':
 
                             # print("Ссылка    подходящая ",nextUrl)
                             nextUrlSet.add(nextUrl)
@@ -244,7 +245,9 @@ class Crawler:
 
 # ---------------------------------------------------
 def main():
-    myCrawler = Crawler(r'C:\Users\StudiEd-PC\YandexDisk\Mag AVTF1\ИС\Лабы\LR1_2.db')
+    cwd = os.getcwd()
+    dBname = cwd + '\LR1_2.db'
+    myCrawler = Crawler(dBname)
     myCrawler.initDB()
 
     ulrList = list()
