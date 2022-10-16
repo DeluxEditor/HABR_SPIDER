@@ -23,6 +23,7 @@ class Crawler:
     def __init__(self, dbFileName):
         print("Конструктор")
         self.conection = sqlite3.connect(dbFileName)
+        self.DBname = dbFileName
         pass
 
     # 0. Деструктор
@@ -36,13 +37,13 @@ class Crawler:
     def initDB(self):
         print("Создать пустые таблицы с необходимой структурой")
 
-        curs = self.conection.cursor()
+        self.curs = self.conection.cursor()
 
         # 1. Таблица wordlist -----------------------------------------------------
         # Удалить таблицу wordlist из БД
         sqlDropWordlist = """DROP TABLE   IF EXISTS    wordlist;  """
         print(sqlDropWordlist)
-        curs.execute(sqlDropWordlist)
+        self.curs.execute(sqlDropWordlist)
 
         # Сформировать SQL запрос
         sqlCreateWordlist = """
@@ -53,12 +54,12 @@ class Crawler:
             );
         """
         print(sqlCreateWordlist)
-        curs.execute(sqlCreateWordlist)
+        self.curs.execute(sqlCreateWordlist)
 
         # 2. Таблица urllist -------------------------------------------------------
         sqlDropURLlist = """DROP TABLE   IF EXISTS    urllist;  """
         print(sqlDropURLlist)
-        curs.execute(sqlDropURLlist)
+        self.curs.execute(sqlDropURLlist)
 
         sqlCreateURLlist = """
             CREATE TABLE   IF NOT EXISTS   urllist (
@@ -67,12 +68,12 @@ class Crawler:
             );
         """
         print(sqlCreateURLlist)
-        curs.execute(sqlCreateURLlist)
+        self.curs.execute(sqlCreateURLlist)
 
         # 3. Таблица wordlocation ----------------------------------------------------
         sqlDropWordLocation = """DROP TABLE   IF EXISTS    wordlocation;  """
         print(sqlDropWordLocation)
-        curs.execute(sqlDropWordLocation)
+        self.curs.execute(sqlDropWordLocation)
 
         sqlCreateWordLocation = """
                    CREATE TABLE   IF NOT EXISTS   wordlocation (
@@ -83,12 +84,12 @@ class Crawler:
                    );
                """
         print(sqlCreateWordLocation)
-        curs.execute(sqlCreateWordLocation)
+        self.curs.execute(sqlCreateWordLocation)
 
         # 4. Таблица linkbeetwenurl --------------------------------------------------
         sqlDropLinkBeetwenURL = """DROP TABLE   IF EXISTS    linkbeetwenurl;  """
         print(sqlDropLinkBeetwenURL)
-        curs.execute(sqlDropLinkBeetwenURL)
+        self.curs.execute(sqlDropLinkBeetwenURL)
 
         sqlCreateLinkBeetwenURL = """
                    CREATE TABLE   IF NOT EXISTS   linkbeetwenurl (
@@ -98,12 +99,12 @@ class Crawler:
                    );
                """
         print(sqlCreateLinkBeetwenURL)
-        curs.execute(sqlCreateLinkBeetwenURL)
+        self.curs.execute(sqlCreateLinkBeetwenURL)
 
         # 5. Таблица linkwords -------------------------------------------------------
         sqlDropLinkWords = """DROP TABLE   IF EXISTS    linkwords;  """
         print(sqlDropLinkWords)
-        curs.execute(sqlDropLinkWords)
+        self.curs.execute(sqlDropLinkWords)
 
         sqlCreateLinkWords = """
                    CREATE TABLE   IF NOT EXISTS   linkwords (
@@ -113,18 +114,13 @@ class Crawler:
                    );
                """
         print(sqlCreateLinkWords)
-        curs.execute(sqlCreateLinkWords)
+        self.curs.execute(sqlCreateLinkWords)
         pass
 
     # 6. Непосредственно сам метод сбора данных.
     # Начиная с заданного списка страниц, выполняет поиск в ширину
     # до заданной глубины, индексируя все встречающиеся по пути страницы
     def crawl(self, urlList, maxDepth=1):
-
-
-        self.conn = sqlite3.connect("./mySQLlite_DB_file.db")
-        self.curs = self.conn.cursor()
-
         for currDepth in range(maxDepth):
 
             print("===========Глубина обхода ", currDepth, "=====================================")
@@ -193,7 +189,7 @@ class Crawler:
                             nextUrlSet.add(nextUrl)
 
                             self.curs.execute("INSERT INTO urllist (url) VALUES(?)", (nextUrl,))
-                            self.conn.commit()
+                            self.conection.commit()
                             # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                             # добавить инф о ссылке в БД  -  addLinkRef(  url,  nextUrl)
                             # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
