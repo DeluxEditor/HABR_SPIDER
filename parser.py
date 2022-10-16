@@ -1,6 +1,3 @@
-# Основной файл
-
-
 import sqlite3
 import datetime
 import requests
@@ -9,15 +6,23 @@ import random
 
 import re
 
+"""for link in soup.find_all("a"):
+    href = link.get("href", "")
+    if "archive" in href:
+        print("text: ", link.text, "\n ", "spurce: ", f"{url}{href[1:]}", "\n", sep="")
+def request_page(url):
+    proxies = {
+        "http": "socks5h://127/0/0/1:9050",
+        "https": "socks5h://127/0/0/1:9050",
+    }
+    return requests.get(url, proxies=proxies)"""
 
 class Crawler:
 
     # 0. Конструктор Инициализация паука с параметрами БД
-    def __init__(self, fileName):
+    def __init__(self, dbFileName):
         print("Конструктор")
-        print("Создать файл БД", fileName)
-
-        self.conection = sqlite3.connect(fileName)
+        self.conection = sqlite3.connect(dbFileName)
         pass
 
     # 0. Деструктор
@@ -79,6 +84,7 @@ class Crawler:
                """
         print(sqlCreateWordLocation)
         curs.execute(sqlCreateWordLocation)
+
         # 4. Таблица linkbeetwenurl --------------------------------------------------
         sqlDropLinkBeetwenURL = """DROP TABLE   IF EXISTS    linkbeetwenurl;  """
         print(sqlDropLinkBeetwenURL)
@@ -93,6 +99,7 @@ class Crawler:
                """
         print(sqlCreateLinkBeetwenURL)
         curs.execute(sqlCreateLinkBeetwenURL)
+
         # 5. Таблица linkwords -------------------------------------------------------
         sqlDropLinkWords = """DROP TABLE   IF EXISTS    linkwords;  """
         print(sqlDropLinkWords)
@@ -170,9 +177,8 @@ class Crawler:
                         nextUrl = tagA.attrs['href']
 
                         # Выбор "подходящих" ссылок => если ссылка начинается с "http"
-                        if nextUrl['href'][0:4] ==  'http':
-
-                            # print("Ссылка    подходящая ",nextUrl)
+                        if nextUrl.startswith('http'):
+                            print("Ссылка    подходящая ",nextUrl)
                             nextUrlSet.add(nextUrl)
 
                             # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -180,7 +186,7 @@ class Crawler:
                             # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
                         else:
-                            # print("Ссылка не подходящая ", nextUrl)
+                            print("Ссылка не подходящая ", nextUrl)
                             pass
                     else:
                         # атрибут href отсутствует
@@ -244,11 +250,11 @@ class Crawler:
 
 # ---------------------------------------------------
 def main():
-    myCrawler = Crawler(r'C:\Users\StudiEd-PC\YandexDisk\Mag AVTF1\ИС\Лабы\LR1_2.db')
+    myCrawler = Crawler("mySQLlite_DB_file.db")
     myCrawler.initDB()
 
     ulrList = list()
-    #ulrList.append("https://habr.com/")
+    ulrList.append("https://habr.com/")
     ulrList.append("https://lenta.ru")
 
     myCrawler.crawl(ulrList, 2)
