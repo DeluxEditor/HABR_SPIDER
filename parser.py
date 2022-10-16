@@ -4,7 +4,7 @@ import requests
 import bs4
 import random
 
-import re
+#import re
 
 """for link in soup.find_all("a"):
     href = link.get("href", "")
@@ -121,7 +121,11 @@ class Crawler:
     # до заданной глубины, индексируя все встречающиеся по пути страницы
     def crawl(self, urlList, maxDepth=1):
 
-        for currDepth in range(0, maxDepth):
+
+        self.conn = sqlite3.connect("./mySQLlite_DB_file.db")
+        self.curs = self.conn.cursor()
+
+        for currDepth in range(maxDepth):
 
             print("===========Глубина обхода ", currDepth, "=====================================")
             counter = 0  # счетчик обработанных страниц
@@ -181,6 +185,8 @@ class Crawler:
                             print("Ссылка    подходящая ",nextUrl)
                             nextUrlSet.add(nextUrl)
 
+                            self.curs.execute("INSERT INTO urllist (url) VALUES(?)", (nextUrl,))
+                            self.conn.commit()
                             # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                             # добавить инф о ссылке в БД  -  addLinkRef(  url,  nextUrl)
                             # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -256,7 +262,7 @@ def main():
     ulrList = list()
     ulrList.append("https://habr.com/")
     ulrList.append("https://fincult.info/")
-    ulrList.append("https://club.dns-shop.ru/digest/")
+    ulrList.append("https://finance.rambler.ru/")
 
     myCrawler.crawl(ulrList, 2)
 
