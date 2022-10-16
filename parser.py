@@ -4,8 +4,7 @@ import requests
 import bs4
 import random
 import os
-
-import re
+import time
 
 """for link in soup.find_all("a"):
     href = link.get("href", "")
@@ -154,7 +153,8 @@ class Crawler:
 
                 # шаг-3. Разобрать HTML-код на составляющие
                 soup = bs4.BeautifulSoup(html_doc, "html.parser")
-                print(" ", soup.title.text)
+                title = soup.find('title')
+                print(" ", title)
 
                 # шаг-4. Найти на странице блоки со скриптами и стилями оформления ('script', 'style')
                 listUnwantedItems = ['script', 'style']
@@ -179,7 +179,13 @@ class Crawler:
 
                         # Выбор "подходящих" ссылок => если ссылка начинается с "http"
                         if nextUrl.startswith('http') or nextUrl.startswith('https'):
-                            print("Ссылка    подходящая ",nextUrl)
+                            if nextUrl.startswith('http://www.facebook.com') or \
+                                    nextUrl.startswith('https://www.facebook.com'):
+                                continue
+                            elif nextUrl.startswith('http://twitter.com') or \
+                                    nextUrl.startswith('https://twitter.com'):
+                                continue
+                            print("Ссылка    подходящая ", nextUrl)
                             nextUrlSet.add(nextUrl)
 
                             # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -259,9 +265,12 @@ def main():
     ulrList = list()
     ulrList.append("https://habr.com/")
     ulrList.append("https://fincult.info/")
-    ulrList.append("https://club.dns-shop.ru/digest/")
+    ulrList.append("https://finance.rambler.ru")
 
+    # Запуск кравлера и замер времени его работы
+    start_time = time.time()
     myCrawler.crawl(ulrList, 2)
+    print("--- %s seconds ---" % (time.time() - start_time))
 
     pass
 
