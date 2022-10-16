@@ -3,8 +3,8 @@ import datetime
 import requests
 import bs4
 import random
-
-#import re
+import os
+import time
 
 """for link in soup.find_all("a"):
     href = link.get("href", "")
@@ -136,7 +136,7 @@ class Crawler:
             # шаг-1. Выбрать url-адрес для обработки
 
             # Вар.2. обход НЕСКОЛЬКИХ url на текущей глубине
-            for num in range(0, 5):
+            for num in range(5):
 
                 # шаг-1. Выбрать url-адрес для обработки
                 numUrl = random.randint(0, len(urlList) - 1)  # назначить номер элемента в списке urlList
@@ -157,7 +157,8 @@ class Crawler:
 
                 # шаг-3. Разобрать HTML-код на составляющие
                 soup = bs4.BeautifulSoup(html_doc, "html.parser")
-                print(" ", soup.title.text)
+                title = soup.find('title')
+                print(" ", title)
 
                 # шаг-4. Найти на странице блоки со скриптами и стилями оформления ('script', 'style')
                 listUnwantedItems = ['script', 'style']
@@ -182,7 +183,13 @@ class Crawler:
 
                         # Выбор "подходящих" ссылок => если ссылка начинается с "http"
                         if nextUrl.startswith('http') or nextUrl.startswith('https'):
-                            print("Ссылка    подходящая ",nextUrl)
+                            if nextUrl.startswith('http://www.facebook.com') or \
+                                    nextUrl.startswith('https://www.facebook.com'):
+                                continue
+                            elif nextUrl.startswith('http://twitter.com') or \
+                                    nextUrl.startswith('https://twitter.com'):
+                                continue
+                            print("Ссылка    подходящая ", nextUrl)
                             nextUrlSet.add(nextUrl)
 
                             self.curs.execute("INSERT INTO urllist (url) VALUES(?)", (nextUrl,))
@@ -256,7 +263,9 @@ class Crawler:
 
 # ---------------------------------------------------
 def main():
-    myCrawler = Crawler("mySQLlite_DB_file.db")
+    cwd = os.getcwd()
+    dBname = cwd + '\LR1_2.db'
+    myCrawler = Crawler(dBname)
     myCrawler.initDB()
 
     ulrList = list()
@@ -264,7 +273,10 @@ def main():
     ulrList.append("https://fincult.info/")
     ulrList.append("https://finance.rambler.ru/")
 
+    # Запуск кравлера и замер времени его работы
+    start_time = time.time()
     myCrawler.crawl(ulrList, 2)
+    print("--- %s seconds ---" % (time.time() - start_time))
 
     pass
 
