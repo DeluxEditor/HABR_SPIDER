@@ -255,7 +255,8 @@ def main():
 
     ulrList = list()
     ulrList.append("https://habr.com/")
-    ulrList.append("https://lenta.ru")
+    ulrList.append("https://fincult.info/")
+    ulrList.append("https://club.dns-shop.ru/digest/")
 
     myCrawler.crawl(ulrList, 2)
 
