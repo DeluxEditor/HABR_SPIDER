@@ -177,7 +177,7 @@ class Crawler:
                         nextUrl = tagA.attrs['href']
 
                         # Выбор "подходящих" ссылок => если ссылка начинается с "http"
-                        if nextUrl.startswith('http'):
+                        if nextUrl.startswith('http') or nextUrl.startswith('https'):
                             print("Ссылка    подходящая ",nextUrl)
                             nextUrlSet.add(nextUrl)
 
