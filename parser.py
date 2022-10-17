@@ -5,6 +5,10 @@ import bs4
 import random
 import os
 import time
+import re #Нужен для поиска текста на сайте
+
+#Создать список игнорируемых
+ignorewords=['the','of','to','and','a','in','is','it']
 
 """for link in soup.find_all("a"):
     href = link.get("href", "")
@@ -137,6 +141,7 @@ class Crawler:
                 # шаг-1. Выбрать url-адрес для обработки
                 numUrl = random.randint(0, len(urlList) - 1)  # назначить номер элемента в списке urlList
                 url = urlList[numUrl]  # получить url-адрес из списка
+                print(numUrl)
 
                 counter += 1
                 curentTime = datetime.datetime.now().time()
@@ -157,12 +162,13 @@ class Crawler:
                 print(" ", title)
 
                 # шаг-4. Найти на странице блоки со скриптами и стилями оформления ('script', 'style')
-                listUnwantedItems = ['script', 'style']
+                listUnwantedItems = ['script', 'style', 'http://www.facebook.com','https://www.facebook.com','http://twitter.com','https://twitter.com']
                 for script in soup.find_all(listUnwantedItems):
                     script.decompose()  # очистить содержимое элемента и удалить его из дерева
 
                 # шаг-5. Добавить содержимого страницы в Индекс
                 self.addIndex(soup, url)
+                self.getTextOnly(soup)
 
                 # шаг-6. Извлечь с данный страницы инф о ссылка на внешние узлы = получить все тэги <a> = получить все ссылки
 
@@ -179,17 +185,20 @@ class Crawler:
 
                         # Выбор "подходящих" ссылок => если ссылка начинается с "http"
                         if nextUrl.startswith('http') or nextUrl.startswith('https'):
-                            if nextUrl.startswith('http://www.facebook.com') or \
+                            """if nextUrl.startswith('http://www.facebook.com') or \
                                     nextUrl.startswith('https://www.facebook.com'):
                                 continue
                             elif nextUrl.startswith('http://twitter.com') or \
                                     nextUrl.startswith('https://twitter.com'):
-                                continue
+                                continue"""
                             print("Ссылка    подходящая ", nextUrl)
                             nextUrlSet.add(nextUrl)
 
+
+                            self.curs.execute(f"SELECT * FROM urllist WHERE url = ?", (nextUrl,))
                             self.curs.execute("INSERT INTO urllist (url) VALUES(?)", (nextUrl,))
                             self.conection.commit()
+
                             # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                             # добавить инф о ссылке в БД  -  addLinkRef(  url,  nextUrl)
                             # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -212,13 +221,35 @@ class Crawler:
     #   urlList содержит указанный адрес
     #   wordlocation содержит слова с указанного url
     def isIndexedURL(self, url):
-        # проверить, присутсвует ли url в БД  (Таблица urllist в БД)
-        # проверить, присутсвуют инф о найденных словах по адресу url (Таблица wordlocation в БД)
+        """ try:
+            self.curs.execute("BEGIN)")
+            # проверить, присутсвует ли url в БД  (Таблица urllist в БД)
+            isIndexed = self.curs.execute(f"SELECT * FROM urllist WHERE url = ?", (nextUrl,))
+        except:
+        """
+            # проверить, присутсвуют инф о найденных словах по адресу url (Таблица wordlocation в БД)
         return False
 
     # 1. Индексирование одной страницы
     def addIndex(self, soup, url):
         print("      addIndex")
+        if self.isIndexed(url): return
+        print('Индексируется ' + url)
+
+        # Получить список слов
+        text = self.getTextOnly(soup)
+        words = self.separateWords(text)
+
+        #Полкучить идентификатор URL
+        urlid = self.getEntryId('urllist', 'url', url)
+
+        # Связать каждое слово с этим URL
+        for i in range(len(words)):
+            word = words[i]
+            if word in ignorewords: continue
+            wordid = self.getEntryId('wordlist', 'word', word)
+            self.conection.execute("INSERT INTO wordlocation (fk_urlid,fk_wordid,location) values (%d,%d,%d)" % (urlid, wordid, i))
+
         # проверить, была ли проиндексирован данных url   - isIndexed
         # если не был, то
         #   получить тестовое содержимое страницы - getTextOnly
@@ -227,21 +258,38 @@ class Crawler:
         #     получить id_слова для currentword   -  getEntryId(‘Таблица wordlist в БД’, ‘столбец word’, ‘currentword ’)
         #     внести данные id_слова + id_url + положение_слова в таблицу wordLocation
 
-        pass
-
     # 2. Разбиение текста на слова
-    def getTextOnly(text):
-        return ""
+    def getTextOnly(self, soup): #text = html_doc in function "def getTextOnly(html_doc)"
+        v=soup.get_text()
+        if v==None:
+            c=soup.contents
+            resulttext=''
+            for t in c:
+                subtext=self.getTextOnly(t)
+                resulttext+=subtext+'\n'
+            return resulttext
+        else:
+            return v.strip()
+
+
+
 
     # 3. Разбиение текста на слова
-    def separateWords(text):
-        pass
+    def separateWords(self, text):
+        splitter = re.compile('\\W*')
+        return [s.lower() for s in splitter.split(text) if s != '']
 
     # 4. Проиндексирован ли URL
-    def isIndexed(url):
+    def isIndexed(self,url):
+        u = self.conection.execute("SELECT rowid FROM urllist WHERE url='%s'" % url).fetchone()
+        if u != None:
+            # Проверяем, что страница посещалась
+            v = self.conection.execute('SELECT * FROM wordlocation WHERE fk_urlid=%d' % u[0]).fetchone()
+            if v != None: return True
+        return False
+
         # проверить, присутствует ли url в БД  (Таблица urllist в БД)
         # проверить, присутствует ли инф о найденных словах по адресу url (Таблица wordlocation в БД)
-        return False
 
     # 5. Добавление ссылки с одной страницы на другую
     def addLinkRef(urlFrom, urlTo, linkText):
@@ -251,8 +299,15 @@ class Crawler:
 
     # 8. Вспомогательная функция для получения идентификатора и
     # добавления записи, если такой еще нет
-    def getEntryId(tableName, fieldName, value):
-        return 1
+    def getEntryId(self, tableName, fieldName, value,createnew=True):
+        cur = self.conection.execute("SELECT rowid FROM %s WHERE %s='%s'" % (tableName, fieldName, value))
+        res = cur.fetchone()
+        if res == None:
+            cur = self.conection.execute("INSERT INTO %s (%s) VALUES ('%s')" % (tableName, fieldName, value))
+            return cur.lastrowid
+        else:
+            return res[0]
+        pass
 
     # конец класса
 
