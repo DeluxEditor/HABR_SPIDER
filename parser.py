@@ -8,18 +8,7 @@ import time
 import re #Нужен для поиска текста на сайте
 
 #Создать список игнорируемых
-ignorewords=['the','of','to','and','a','in','is','it']
-
-"""for link in soup.find_all("a"):
-    href = link.get("href", "")
-    if "archive" in href:
-        print("text: ", link.text, "\n ", "spurce: ", f"{url}{href[1:]}", "\n", sep="")
-def request_page(url):
-    proxies = {
-        "http": "socks5h://127/0/0/1:9050",
-        "https": "socks5h://127/0/0/1:9050",
-    }
-    return requests.get(url, proxies=proxies)"""
+ignorewords=['the','of','to','and','a','in','is','it', 'и', "а", "но", "за"]
 
 class Crawler:
 
@@ -37,88 +26,66 @@ class Crawler:
         self.conection.close()  # закрыть соединение
         pass
 
-    # 7. Инициализация таблиц в БД
-    def initDB(self):
-        print("Создать пустые таблицы с необходимой структурой")
+    # 1. Индексирование одной страницы
+    def addIndex(self, soup, url):
+        print("      addIndex")
+        if self.isIndexed(url): return
+        print('Индексируется ' + url)
 
-        self.curs = self.conection.cursor()
+        # Получить список слов
+        text = self.getTextOnly(soup)
+        words = self.separateWords(text)
 
-        # 1. Таблица wordlist -----------------------------------------------------
-        # Удалить таблицу wordlist из БД
-        sqlDropWordlist = """DROP TABLE   IF EXISTS    wordlist;  """
-        print(sqlDropWordlist)
-        self.curs.execute(sqlDropWordlist)
+        # Полкучить идентификатор URL
+        urlid = self.getEntryId('urllist', 'url', url)
 
-        # Сформировать SQL запрос
-        sqlCreateWordlist = """
-            CREATE TABLE   IF NOT EXISTS   wordlist (
-        	    rowid  INTEGER   PRIMARY KEY   AUTOINCREMENT, -- первичный ключ
-        	    word TEXT   NOT NULL, -- слово
-        	    isFiltred INTEGER     -- флаг фильтрации
-            );
-        """
-        print(sqlCreateWordlist)
-        self.curs.execute(sqlCreateWordlist)
+        # Связать каждое слово с этим URL
+        for i in range(len(words)):
+            word = words[i]
+            if word in ignorewords: continue
+            wordid = self.getEntryId('wordlist', 'word', word)
+            self.conection.execute(
+                "INSERT INTO wordlocation (fk_urlid,fk_wordid,location) values (%d,%d,%d)" % (urlid, wordid, i))
 
-        # 2. Таблица urllist -------------------------------------------------------
-        sqlDropURLlist = """DROP TABLE   IF EXISTS    urllist;  """
-        print(sqlDropURLlist)
-        self.curs.execute(sqlDropURLlist)
+        # проверить, была ли проиндексирован данных url   - isIndexed
+        # если не был, то
+        #   получить тестовое содержимое страницы - getTextOnly
+        #   получить список отдельных слов        - separateWords
+        #   Для каждого найденного слова currentword в списке wordList[]
+        #     получить id_слова для currentword   -  getEntryId(‘Таблица wordlist в БД’, ‘столбец word’, ‘currentword ’)
+        #     внести данные id_слова + id_url + положение_слова в таблицу wordLocation
 
-        sqlCreateURLlist = """
-            CREATE TABLE   IF NOT EXISTS   urllist (
-        	    rowid  INTEGER   PRIMARY KEY   AUTOINCREMENT, -- первичный ключ
-        	    url TEXT -- адрес
-            );
-        """
-        print(sqlCreateURLlist)
-        self.curs.execute(sqlCreateURLlist)
+    # 2. Разбиение текста на слова
+    def getTextOnly(self, soup):  # text = html_doc in function "def getTextOnly(html_doc)"
+        v = soup.get_text()
+        if v == None:
+            c = soup.contents
+            resulttext = ''
+            for t in c:
+                subtext = self.getTextOnly(t)
+                resulttext += subtext + '\n'
+            return resulttext
+        else:
+            return v.strip()
 
-        # 3. Таблица wordlocation ----------------------------------------------------
-        sqlDropWordLocation = """DROP TABLE   IF EXISTS    wordlocation;  """
-        print(sqlDropWordLocation)
-        self.curs.execute(sqlDropWordLocation)
+    # 3. Разбиение текста на слова
+    def separateWords(self, text):
+        splitter = re.compile('\\W*')
+        return [s.lower() for s in splitter.split(text) if s != '']
 
-        sqlCreateWordLocation = """
-                   CREATE TABLE   IF NOT EXISTS   wordlocation (
-               	    rowid  INTEGER   PRIMARY KEY   AUTOINCREMENT, -- первичный ключ
-               	    fk_wordid INTEGER,     -- привязка слова к номеру
-               	    fk_urlid INTEGER,     -- привязка номера url к слову
-               	    location INTEGER     -- привязка слова к номеру
-                   );
-               """
-        print(sqlCreateWordLocation)
-        self.curs.execute(sqlCreateWordLocation)
+    # 4. Проиндексирован ли URL
+    def isIndexed(self, url):
+        u = self.conection.execute("SELECT rowid FROM urllist WHERE url='%s'" % url).fetchone()
+        if u != None:
+            # Проверяем, что страница посещалась
+            v = self.conection.execute('SELECT * FROM wordlocation WHERE fk_urlid=%d' % u[0]).fetchone()
+            if v != None: return True
+        return False
 
-        # 4. Таблица linkbeetwenurl --------------------------------------------------
-        sqlDropLinkBeetwenURL = """DROP TABLE   IF EXISTS    linkbeetwenurl;  """
-        print(sqlDropLinkBeetwenURL)
-        self.curs.execute(sqlDropLinkBeetwenURL)
-
-        sqlCreateLinkBeetwenURL = """
-                   CREATE TABLE   IF NOT EXISTS   linkbeetwenurl (
-               	    rowid  INTEGER   PRIMARY KEY   AUTOINCREMENT, -- первичный ключ
-               	    fk_fromurl_id INTEGER,     -- привязка слова к номеру
-               	    fk_tourl_id INTEGER     -- привязка слова к номеру
-                   );
-               """
-        print(sqlCreateLinkBeetwenURL)
-        self.curs.execute(sqlCreateLinkBeetwenURL)
-
-        # 5. Таблица linkwords -------------------------------------------------------
-        sqlDropLinkWords = """DROP TABLE   IF EXISTS    linkwords;  """
-        print(sqlDropLinkWords)
-        self.curs.execute(sqlDropLinkWords)
-
-        sqlCreateLinkWords = """
-                   CREATE TABLE   IF NOT EXISTS   linkwords (
-               	    rowid  INTEGER   PRIMARY KEY   AUTOINCREMENT, -- первичный ключ
-               	    fk_wordid INTEGER,     -- привязка слова к номеру страницы в древе
-               	    fk_linkid INTEGER     -- номер ссылки к крирпрму привязаны слова
-                   );
-               """
-        print(sqlCreateLinkWords)
-        self.curs.execute(sqlCreateLinkWords)
+    # 5. Добавление ссылки с одной страницы на другую
+    def addLinkRef(urlFrom, urlTo, linkText):
+        # добавить инф. в таблицу БД  linkbeetwenurl
+        # добавить инф. в таблицу БД  linkwords
         pass
 
     # 6. Непосредственно сам метод сбора данных.
@@ -136,7 +103,7 @@ class Crawler:
             # шаг-1. Выбрать url-адрес для обработки
 
             # Вар.2. обход НЕСКОЛЬКИХ url на текущей глубине
-            for num in range(5):
+            for url in urlList:
 
                 # шаг-1. Выбрать url-адрес для обработки
                 numUrl = random.randint(0, len(urlList) - 1)  # назначить номер элемента в списке urlList
@@ -185,15 +152,9 @@ class Crawler:
 
                         # Выбор "подходящих" ссылок => если ссылка начинается с "http"
                         if nextUrl.startswith('http') or nextUrl.startswith('https'):
-                            """if nextUrl.startswith('http://www.facebook.com') or \
-                                    nextUrl.startswith('https://www.facebook.com'):
-                                continue
-                            elif nextUrl.startswith('http://twitter.com') or \
-                                    nextUrl.startswith('https://twitter.com'):
-                                continue"""
+
                             print("Ссылка    подходящая ", nextUrl)
                             nextUrlSet.add(nextUrl)
-
 
                             self.curs.execute(f"SELECT * FROM urllist WHERE url = ?", (nextUrl,))
                             self.curs.execute("INSERT INTO urllist (url) VALUES(?)", (nextUrl,))
@@ -217,84 +178,88 @@ class Crawler:
 
         pass
 
-    # Проверить, содержится ли данный url в индексе
-    #   urlList содержит указанный адрес
-    #   wordlocation содержит слова с указанного url
-    def isIndexedURL(self, url):
-        """ try:
-            self.curs.execute("BEGIN)")
-            # проверить, присутсвует ли url в БД  (Таблица urllist в БД)
-            isIndexed = self.curs.execute(f"SELECT * FROM urllist WHERE url = ?", (nextUrl,))
-        except:
+    # 7. Инициализация таблиц в БД
+    def initDB(self):
+        print("Создать пустые таблицы с необходимой структурой")
+
+        self.curs = self.conection.cursor()
+
+        # 1. Таблица wordlist -----------------------------------------------------
+        # Удалить таблицу wordlist из БД
+        sqlDropWordlist = """DROP TABLE   IF EXISTS    wordlist;  """
+        print(sqlDropWordlist)
+        self.curs.execute(sqlDropWordlist)
+
+        # Сформировать SQL запрос
+        sqlCreateWordlist = """
+            CREATE TABLE   IF NOT EXISTS   wordlist (
+                rowid  INTEGER   PRIMARY KEY   AUTOINCREMENT, -- первичный ключ
+                word TEXT   NOT NULL, -- слово
+                isFiltred INTEGER     -- флаг фильтрации
+            );
         """
-            # проверить, присутсвуют инф о найденных словах по адресу url (Таблица wordlocation в БД)
-        return False
+        print(sqlCreateWordlist)
+        self.curs.execute(sqlCreateWordlist)
 
-    # 1. Индексирование одной страницы
-    def addIndex(self, soup, url):
-        print("      addIndex")
-        if self.isIndexed(url): return
-        print('Индексируется ' + url)
+        # 2. Таблица urllist -------------------------------------------------------
+        sqlDropURLlist = """DROP TABLE   IF EXISTS    urllist;  """
+        print(sqlDropURLlist)
+        self.curs.execute(sqlDropURLlist)
 
-        # Получить список слов
-        text = self.getTextOnly(soup)
-        words = self.separateWords(text)
+        sqlCreateURLlist = """
+            CREATE TABLE   IF NOT EXISTS   urllist (
+                rowid  INTEGER   PRIMARY KEY   AUTOINCREMENT, -- первичный ключ
+                url TEXT -- адрес
+            );
+        """
+        print(sqlCreateURLlist)
+        self.curs.execute(sqlCreateURLlist)
 
-        #Полкучить идентификатор URL
-        urlid = self.getEntryId('urllist', 'url', url)
+        # 3. Таблица wordlocation ----------------------------------------------------
+        sqlDropWordLocation = """DROP TABLE   IF EXISTS    wordlocation;  """
+        print(sqlDropWordLocation)
+        self.curs.execute(sqlDropWordLocation)
 
-        # Связать каждое слово с этим URL
-        for i in range(len(words)):
-            word = words[i]
-            if word in ignorewords: continue
-            wordid = self.getEntryId('wordlist', 'word', word)
-            self.conection.execute("INSERT INTO wordlocation (fk_urlid,fk_wordid,location) values (%d,%d,%d)" % (urlid, wordid, i))
+        sqlCreateWordLocation = """
+                   CREATE TABLE   IF NOT EXISTS   wordlocation (
+                    rowid  INTEGER   PRIMARY KEY   AUTOINCREMENT, -- первичный ключ
+                    fk_wordid INTEGER,     -- привязка слова к номеру
+                    fk_urlid INTEGER,     -- привязка номера url к слову
+                    location INTEGER     -- привязка слова к номеру
+                   );
+               """
+        print(sqlCreateWordLocation)
+        self.curs.execute(sqlCreateWordLocation)
 
-        # проверить, была ли проиндексирован данных url   - isIndexed
-        # если не был, то
-        #   получить тестовое содержимое страницы - getTextOnly
-        #   получить список отдельных слов        - separateWords
-        #   Для каждого найденного слова currentword в списке wordList[]
-        #     получить id_слова для currentword   -  getEntryId(‘Таблица wordlist в БД’, ‘столбец word’, ‘currentword ’)
-        #     внести данные id_слова + id_url + положение_слова в таблицу wordLocation
+        # 4. Таблица linkbeetwenurl --------------------------------------------------
+        sqlDropLinkBeetwenURL = """DROP TABLE   IF EXISTS    linkbeetwenurl;  """
+        print(sqlDropLinkBeetwenURL)
+        self.curs.execute(sqlDropLinkBeetwenURL)
 
-    # 2. Разбиение текста на слова
-    def getTextOnly(self, soup): #text = html_doc in function "def getTextOnly(html_doc)"
-        v=soup.get_text()
-        if v==None:
-            c=soup.contents
-            resulttext=''
-            for t in c:
-                subtext=self.getTextOnly(t)
-                resulttext+=subtext+'\n'
-            return resulttext
-        else:
-            return v.strip()
+        sqlCreateLinkBeetwenURL = """
+                   CREATE TABLE   IF NOT EXISTS   linkbeetwenurl (
+                    rowid  INTEGER   PRIMARY KEY   AUTOINCREMENT, -- первичный ключ
+                    fk_fromurl_id INTEGER,     -- привязка слова к номеру
+                    fk_tourl_id INTEGER     -- привязка слова к номеру
+                   );
+               """
+        print(sqlCreateLinkBeetwenURL)
+        self.curs.execute(sqlCreateLinkBeetwenURL)
 
+        # 5. Таблица linkwords -------------------------------------------------------
+        sqlDropLinkWords = """DROP TABLE   IF EXISTS    linkwords;  """
+        print(sqlDropLinkWords)
+        self.curs.execute(sqlDropLinkWords)
 
-
-
-    # 3. Разбиение текста на слова
-    def separateWords(self, text):
-        splitter = re.compile('\\W*')
-        return [s.lower() for s in splitter.split(text) if s != '']
-
-    # 4. Проиндексирован ли URL
-    def isIndexed(self,url):
-        u = self.conection.execute("SELECT rowid FROM urllist WHERE url='%s'" % url).fetchone()
-        if u != None:
-            # Проверяем, что страница посещалась
-            v = self.conection.execute('SELECT * FROM wordlocation WHERE fk_urlid=%d' % u[0]).fetchone()
-            if v != None: return True
-        return False
-
-        # проверить, присутствует ли url в БД  (Таблица urllist в БД)
-        # проверить, присутствует ли инф о найденных словах по адресу url (Таблица wordlocation в БД)
-
-    # 5. Добавление ссылки с одной страницы на другую
-    def addLinkRef(urlFrom, urlTo, linkText):
-        # добавить инф. в таблицу БД  linkbeetwenurl
-        # добавить инф. в таблицу БД  linkwords
+        sqlCreateLinkWords = """
+                   CREATE TABLE   IF NOT EXISTS   linkwords (
+                    rowid  INTEGER   PRIMARY KEY   AUTOINCREMENT, -- первичный ключ
+                    fk_wordid INTEGER,     -- привязка слова к номеру страницы в древе
+                    fk_linkid INTEGER     -- номер ссылки к крирпрму привязаны слова
+                   );
+               """
+        print(sqlCreateLinkWords)
+        self.curs.execute(sqlCreateLinkWords)
         pass
 
     # 8. Вспомогательная функция для получения идентификатора и
