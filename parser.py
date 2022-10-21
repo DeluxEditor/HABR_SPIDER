@@ -315,7 +315,7 @@ class Crawler:
 # ---------------------------------------------------
 def main():
     cwd = os.getcwd()
-    dBname = cwd + '\LR1_2.db'
+    dBname = cwd + '/LR1_2.db'
     myCrawler = Crawler(dBname)
     myCrawler.initDB()
 
