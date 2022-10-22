@@ -65,7 +65,7 @@ class Crawler:
                         continue
                     else:
                         nextUrl = tagA.attrs['href']
-                        if nextUrl[0:4] == 'http' and not self.isIndexed(nextUrl)::
+                        if nextUrl[0:4] == 'http' and not self.isIndexed(nextUrl):
                             print("Ссылка    подходящая ", nextUrl)
 
                             nextUrlSet.add(nextUrl)
