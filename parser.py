@@ -57,9 +57,11 @@ class Crawler:
 
     # 2. Разбиение текста на слова
     def getTextOnly(self, soup):  # text = html_doc in function "def getTextOnly(html_doc)"
-        v = soup.get_text()
+        v = soup.text
+        print(v)
         if v == None:
             c = soup.contents
+            #print (c)
             resulttext = ''
             for t in c:
                 subtext = self.getTextOnly(t)
@@ -70,8 +72,8 @@ class Crawler:
 
     # 3. Разбиение текста на слова
     def separateWords(self, text):
-        splitter = re.compile('\\W*')
-        return [s.lower() for s in splitter.split(text) if s != '']
+        #splitter = re.compile('\\W*')
+        return [s.lower() for s in text.split(" ") if s != '']
 
     # 4. Проиндексирован ли URL
     def isIndexed(self, url):
@@ -135,7 +137,6 @@ class Crawler:
 
                 # шаг-5. Добавить содержимого страницы в Индекс
                 self.addIndex(soup, url)
-                self.getTextOnly(soup)
 
                 # шаг-6. Извлечь с данный страницы инф о ссылка на внешние узлы = получить все тэги <a> = получить все ссылки
 
@@ -151,7 +152,7 @@ class Crawler:
                         nextUrl = tagA.attrs['href']
 
                         # Выбор "подходящих" ссылок => если ссылка начинается с "http"
-                        if nextUrl.startswith('http') or nextUrl.startswith('https'):
+                        if nextUrl[0:4]=='http' and not self.isIndexed(nextUrl):
 
                             print("Ссылка    подходящая ", nextUrl)
                             nextUrlSet.add(nextUrl)
@@ -167,6 +168,8 @@ class Crawler:
                         else:
                             print("Ссылка не подходящая ", nextUrl)
                             pass
+                        linkText = self.getTextOnly(nextUrl)
+                        self.addLinkRef(url, nextUrl, linkText)
                     else:
                         # атрибут href отсутствует
                         continue
