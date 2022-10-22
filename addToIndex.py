@@ -1,0 +1,43 @@
+import re
+import textOnly
+import isIndexed
+
+
+def addIndex(self, soup, url):
+    if isIndexed.isIndexed(self, url): return
+    print('Индексируется ' + url)
+
+    text = textOnly.getTextOnly(soup)  # Получить список слов
+    words = separateWords(text)
+    urlid = getEntryId(self, 'urllist', 'url', url)  # Получить идентификатор URL
+
+    # Связать каждое слово с этим URL
+    for i in range(len(words)):
+        word = words[i]
+        if word in self.ignorewords: continue
+        wordid = getEntryId(self, 'wordlist', 'word', word)
+        self.conection.execute(
+            "INSERT INTO wordlocation (fk_urlid,fk_wordid,location) values (%d,%d,%d)" % (urlid, wordid, i))
+
+    # проверить, была ли проиндексирован данных url   - isIndexed
+    # если не был, то
+    #   получить тестовое содержимое страницы - getTextOnly
+    #   получить список отдельных слов        - separateWords
+    #   Для каждого найденного слова currentword в списке wordList[]
+    #     получить id_слова для currentword   -  getEntryId(‘Таблица wordlist в БД’, ‘столбец word’, ‘currentword ’)
+    #     внести данные id_слова + id_url + положение_слова в таблицу wordLocation
+
+
+def separateWords(text):
+    splitter = re.compile('\\W*')
+    return [s.lower() for s in splitter.split(text) if s != '']
+
+
+def getEntryId(self, tableName, fieldName, value, createnew=True):
+    cur = self.conection.execute("SELECT rowid FROM %s WHERE %s='%s'" % (tableName, fieldName, value))
+    res = cur.fetchone()
+    if res == None:
+        cur = self.conection.execute("INSERT INTO %s (%s) VALUES ('%s')" % (tableName, fieldName, value))
+        return cur.lastrowid
+    else:
+        return res[0]
