@@ -1,4 +1,5 @@
 def addLinkRef(urlFrom, urlTo, linkText):
-    # добавить инф. в таблицу БД  linkbeetwenurl
-    # добавить инф. в таблицу БД  linkwords
+    """
+    urlid = getEntryId(self, 'urllist', 'url', url)
+    self.cursor.execute("INSERT INTO linkbetwenurl (?) VALUES(?)", (,))"""
     pass

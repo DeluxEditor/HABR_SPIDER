@@ -1,5 +1,5 @@
 def getTextOnly(soup):
-    v = soup.get_text()
+    v = soup.text
     if v == None:
         c = soup.contents
         resulttext = ''

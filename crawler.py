@@ -30,12 +30,15 @@ class Crawler:
             # for url in  urlList:
 
             # Вар.2. обход НЕСКОЛЬКИХ url на текущей глубине
-            for num in range(5):
+            for url in urlList:
+
                 numUrl = random.randint(0, len(urlList) - 1)
                 url = urlList[numUrl]
                 print(numUrl)
+
                 counter += 1
                 curentTime = datetime.datetime.now().time()
+
                 try:
                     print("{}/{} {} Попытка открыть {} ...".format(counter, len(urlList), curentTime, url))
                     html_doc = requests.get(url).text
@@ -61,7 +64,7 @@ class Crawler:
                         continue
                     else:
                         nextUrl = tagA.attrs['href']
-                        if nextUrl.startswith('http') or nextUrl.startswith('https'):
+                        if nextUrl[0:4] == 'http' and not self.isIndexed(nextUrl)::
                             print("Ссылка    подходящая ", nextUrl)
 
                             nextUrlSet.add(nextUrl)
@@ -72,7 +75,11 @@ class Crawler:
                             # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                             # добавить инф о ссылке в БД  -  addLinkRef(  url,  nextUrl)
                             # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                            linkText = self.getTextOnly(nextUrl)
+                            self.addLinkRef(url, nextUrl, linkText)
+
                         else:
                             print("Ссылка не подходящая ", nextUrl)
                             pass
+
             urlList = list(nextUrlSet)

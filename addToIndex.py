@@ -29,8 +29,8 @@ def addIndex(self, soup, url):
 
 
 def separateWords(text):
-    splitter = re.compile('\\W*')
-    return [s.lower() for s in splitter.split(text) if s != '']
+    #splitter = re.compile('\\W*')
+    return [s.lower() for s in text.split(" ") if s != '']
 
 
 def getEntryId(self, tableName, fieldName, value, createnew=True):
