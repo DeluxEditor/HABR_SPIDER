@@ -5,6 +5,7 @@ import datetime
 import requests
 import createDB
 import addToIndex
+import metrics
 
 
 class Crawler:
@@ -71,6 +72,8 @@ class Crawler:
                             self.cursor.execute(f"SELECT * FROM urlList WHERE url = ?", (nextUrl,))
                             self.cursor.execute("INSERT INTO urlList (url) VALUES(?)", (nextUrl,))
                             self.conection.commit()
+
+                            metrics.metricsInsert(self)
 
                             # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                             # добавить инф о ссылке в БД  -  addLinkRef(  url,  nextUrl)
