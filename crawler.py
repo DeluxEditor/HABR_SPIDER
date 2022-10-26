@@ -6,7 +6,12 @@ import requests
 import createDB
 import addToIndex
 import metrics
+import textOnly
+import addLink
+import isIndexed
 
+listUnwantedItems = ['script', 'style', 'http://www.facebook.com','https://www.facebook.com',
+                                     'http://twitter.com','https://twitter.com']
 
 class Crawler:
     def __init__(self, dbFileName, blackList):
@@ -27,10 +32,6 @@ class Crawler:
             counter = 0
             nextUrlSet = set()
 
-            # Вар.1. обход каждого url на текущей глубине
-            # for url in  urlList:
-
-            # Вар.2. обход НЕСКОЛЬКИХ url на текущей глубине
             for url in urlList:
 
                 numUrl = random.randint(0, len(urlList) - 1)
@@ -51,8 +52,6 @@ class Crawler:
                 title = soup.find('title')
                 print(" ", title)
 
-                listUnwantedItems = ['script', 'style', 'http://www.facebook.com','https://www.facebook.com',
-                                     'http://twitter.com','https://twitter.com']
                 for script in soup.find_all(listUnwantedItems):
                     script.decompose()
 
@@ -65,7 +64,7 @@ class Crawler:
                         continue
                     else:
                         nextUrl = tagA.attrs['href']
-                        if nextUrl[0:4] == 'http' and not self.isIndexed(nextUrl):
+                        if nextUrl[0:4] == 'http' and not isIndexed.isIndexed(self, nextUrl):
                             print("Ссылка    подходящая ", nextUrl)
 
                             nextUrlSet.add(nextUrl)
@@ -78,8 +77,8 @@ class Crawler:
                             # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                             # добавить инф о ссылке в БД  -  addLinkRef(  url,  nextUrl)
                             # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                            linkText = self.getTextOnly(nextUrl)
-                            self.addLinkRef(url, nextUrl, linkText)
+                            """linkText = textOnly.getTextOnly(nextUrl)
+                            addLink.addLinkRef(url, nextUrl, linkText)"""
 
                         else:
                             print("Ссылка не подходящая ", nextUrl)

@@ -6,7 +6,7 @@ def isIndexedURL(self, url):
     except:
     """
     # проверить, присутсвуют инф о найденных словах по адресу url (Таблица wordlocation в БД)
-    return False
+    pass
 
 
 def isIndexed(self, url):
