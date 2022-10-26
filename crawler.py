@@ -27,7 +27,7 @@ class Crawler:
     addIndex = addToIndex.addIndex
     isIndexed = isIndexed.isIndexed
     getTextOnly = textOnly.getTextOnly
-    addLinkRef = addLink.addLinkRef
+
 
     def crawl(self, urlList, maxDepth=1):
         for currDepth in range(maxDepth):
@@ -71,18 +71,12 @@ class Crawler:
                         nextUrl = tagA.attrs['href']
                         if nextUrl[0:4] == 'http' and not isIndexed.isIndexed(self, nextUrl):
                             print("Ссылка    подходящая ", nextUrl)
-
                             nextUrlSet.add(nextUrl)
-                            self.cursor.execute(f"SELECT * FROM urlList WHERE url = ?", (nextUrl,))
                             self.cursor.execute("INSERT INTO urlList (url) VALUES(?)", (nextUrl,))
+                            # Добавление связи этой свежей ссылки c текущей в linkBetweenURL
+                            self.cursor.execute(
+                                f"INSERT INTO linkBetweenURL (fk_From_UrlId, fk_To_UrlId) VALUES ('{url}', '{nextUrl}')")
                             self.conection.commit()
-
-                            # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                            # добавить инф о ссылке в БД  -  addLinkRef(  url,  nextUrl)
-                            # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                            """linkText = textOnly.getTextOnly(nextUrl)
-                            addLink.addLinkRef(url, nextUrl, linkText)"""
-
                         else:
                             print("Ссылка не подходящая ", nextUrl)
                             pass
