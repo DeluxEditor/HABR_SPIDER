@@ -1,13 +1,14 @@
 import re
 import textOnly
 import isIndexed
+import sqlite3
 
 
 def addIndex(self, soup, url):
     if isIndexed.isIndexed(self, url): return
     print('Индексируется ' + url)
 
-    text = textOnly.getTextOnly(soup)  # Получить список слов
+    text = textOnly.getTextOnly(self, soup)  # Получить список слов
     words = separateWords(text)
     urlid = getEntryId(self, 'urlId', 'urlList', 'url', url)  # Получить идентификатор URL
 
@@ -35,10 +36,13 @@ def separateWords(text):
 
 
 def getEntryId(self, rowName, tableName, fieldName, value, createnew=True):
-    cur = self.conection.execute("SELECT %s FROM %s WHERE %s='%s'" % (rowName, tableName, fieldName, value))
-    res = cur.fetchone()
-    if res == None:
-        cur = self.conection.execute("INSERT INTO %s (%s) VALUES ('%s')" % (tableName, fieldName, value))
-        return cur.lastrowid
-    else:
-        return res[0]
+    try:
+        cur = self.conection.execute("SELECT %s FROM %s WHERE %s='%s'" % (rowName, tableName, fieldName, value))
+        res = cur.fetchone()
+        if res == None:
+            cur = self.conection.execute("INSERT INTO %s (%s) VALUES ('%s')" % (tableName, fieldName, value))
+            return cur.lastrowid
+        else:
+            return res[0]
+    except sqlite3.OperationalError:
+        return 0

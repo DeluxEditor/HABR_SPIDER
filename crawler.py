@@ -25,6 +25,9 @@ class Crawler:
 
     initDB = createDB.createDB
     addIndex = addToIndex.addIndex
+    isIndexed = isIndexed.isIndexed
+    getTextOnly = textOnly.getTextOnly
+    addLinkRef = addLink.addLinkRef
 
     def crawl(self, urlList, maxDepth=1):
         for currDepth in range(maxDepth):

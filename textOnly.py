@@ -1,4 +1,4 @@
-def getTextOnly(soup):
+def getTextOnly(self, soup):
     v = soup.text
     if v == None:
         c = soup.contents

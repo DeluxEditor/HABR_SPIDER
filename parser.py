@@ -8,7 +8,7 @@ import metrics
 cwd = os.getcwd()
 DBname = cwd + '/LR1_2.db'
 
-ignorewords = ['the', 'of', 'to', 'and', 'a', 'in', 'is', 'it', 'it\'s', 'cv\'s',]
+ignorewords = ['the', 'of', 'to', 'and', 'a', 'in', 'is', 'it']
 
 myCrawler = crawler.Crawler(DBname, ignorewords)
 myCrawler.initDB()
