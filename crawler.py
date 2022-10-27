@@ -7,7 +7,6 @@ import createDB
 import addToIndex
 import metrics
 import textOnly
-import addLink
 import isIndexed
 
 listUnwantedItems = ['script', 'style', 'http://www.facebook.com','https://www.facebook.com',
