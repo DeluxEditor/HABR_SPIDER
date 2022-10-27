@@ -8,5 +8,5 @@ def metricsInsert(self):
     countWord = self.cursor.execute('SELECT COUNT(wordId) FROM wordList;')
     wordMetrics.append(countWord.fetchone())
 
-    countUrl = self.cursor.execute('SELECT COUNT(urlId) FROM urlList;')
+    countUrl = self.cursor.execute('SELECT COUNT(linkId) FROM linkBetweenURL;')
     urlMetrics.append(countUrl.fetchone())

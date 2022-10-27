@@ -62,6 +62,8 @@ class Crawler:
 
                 linksOnCurrentPage = soup.find_all('a')
 
+                metrics.metricsInsert(self)
+
                 for tagA in linksOnCurrentPage:
                     if not ('href' in tagA.attrs):
                         continue
@@ -74,8 +76,6 @@ class Crawler:
                             self.cursor.execute(f"SELECT * FROM urlList WHERE url = ?", (nextUrl,))
                             self.cursor.execute("INSERT INTO urlList (url) VALUES(?)", (nextUrl,))
                             self.conection.commit()
-
-                            metrics.metricsInsert(self)
 
                             # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                             # добавить инф о ссылке в БД  -  addLinkRef(  url,  nextUrl)

@@ -15,7 +15,6 @@ myCrawler.initDB()
 
 ulrList = list()
 ulrList.append("https://habr.com/")
-ulrList.append("https://fincult.info/")
 ulrList.append("https://finance.rambler.ru/")
 
 # Запуск кравлера и замер времени его работы
