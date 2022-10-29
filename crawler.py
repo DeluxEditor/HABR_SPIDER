@@ -34,7 +34,8 @@ class Crawler:
             counter = 0
             nextUrlSet = set()
 
-            for url in urlList:
+            for i in range(3):
+            #for url in urlList:
 
                 numUrl = random.randint(0, len(urlList) - 1)
                 url = urlList[numUrl]
@@ -68,7 +69,7 @@ class Crawler:
                         continue
                     else:
                         nextUrl = tagA.attrs['href']
-                        if nextUrl[0:4] == 'http' and not isIndexed.isIndexed(self, nextUrl):
+                        if nextUrl[0:4] == 'http' and isIndexed.isIndexed(self, nextUrl):
                             print("Ссылка    подходящая ", nextUrl)
                             nextUrlSet.add(nextUrl)
                             self.cursor.execute("INSERT INTO urlList (url) VALUES(?)", (nextUrl,))

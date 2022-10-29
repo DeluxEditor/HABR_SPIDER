@@ -30,10 +30,13 @@ def addIndex(self, soup, url):
 
 
 def separateWords(text):
-    text = re.sub(r"\',\(,\),\", [@|$|#|%|&]"," ", text)
-    splitter = re.compile(str(text))
-    return [ s.lower() for s in re.split(r'\W+',str(splitter)) if s!='']
+    #text = re.sub(r"\',\(,\),\", [@|$|#|%|&]"," ", text)
+    # splitter = re.compile(str(text))
+    #return [ s.lower() for s in re.split(r'\W+',str(splitter)) if s!='']
 
+    text = re.sub(r"\',\(,\),\", [@|$|#|%|&]"," ", text)
+    # splitter = re.compile(str(text))
+    return [s.lower() for s in re.split(r'\W+',text) if s!='']
 
 def getEntryId(self, rowName, tableName, fieldName, value, createnew=True):
     try:
