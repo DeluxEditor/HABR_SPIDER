@@ -34,8 +34,7 @@ class Crawler:
             counter = 0
             nextUrlSet = set()
 
-            #for url in urlList:
-            for url in range(3):
+            for url in urlList:
 
                 numUrl = random.randint(0, len(urlList) - 1)
                 url = urlList[numUrl]
