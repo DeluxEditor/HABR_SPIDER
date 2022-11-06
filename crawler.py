@@ -34,12 +34,7 @@ class Crawler:
             counter = 0
             nextUrlSet = set()
 
-            for url in urlList:
-
-                numUrl = random.randint(0, len(urlList) - 1)
-                url = urlList[numUrl]
-                print(numUrl)
-
+            for url in urlList[:]:
                 counter += 1
                 curentTime = datetime.datetime.now().time()
 
@@ -68,7 +63,8 @@ class Crawler:
                         continue
                     else:
                         nextUrl = tagA.attrs['href']
-                        if nextUrl[0:4] == 'http' and not isIndexed.isIndexed(self, nextUrl):
+                        if nextUrl[0:4] == 'http' and not isIndexed.isIndexed(self, nextUrl)\
+                                and nextUrl[-4:] != 'epub':
                             print("Ссылка    подходящая ", nextUrl)
                             nextUrlSet.add(nextUrl)
                             # self.cursor.execute("INSERT INTO urlList (url) VALUES(?)", (nextUrl,))

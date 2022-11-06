@@ -4,11 +4,15 @@ import pandas as pd
 import plotly_express as px
 import crawler
 import metrics
+import topTwelve
 
 cwd = os.getcwd()
 DBname = cwd + '/LR1_2.db'
 
-ignorewords = ['the', 'of', 'to', 'and', 'a', 'in', 'is', 'it']
+ignorewords = ['the', 'of', 'to', 'and', 'a', 'in', 'is', 'it',
+               'и', 'но', 'а', 'как', 'также', 'тоже', 'притом', 'в',
+               'зато', 'потому что', 'так как', 'чтобы', 'на', 'не', 'с', 'о', 'по'
+               ]
 
 myCrawler = crawler.Crawler(DBname, ignorewords)
 myCrawler.initDB()
@@ -31,3 +35,8 @@ urlGraf = px.line(urldf, title = 'Количество добавленных с
 
 wordGraf.show()
 urlGraf.show()
+
+print(f'ТОП 20 слов \n')
+topTwelve.topWord(DBname)
+print(f'\n ТОП 20 ссылок \n')
+topTwelve.topUrl(DBname)
