@@ -34,7 +34,8 @@ class Crawler:
             counter = 0
             nextUrlSet = set()
 
-            for url in urlList:
+            #for url in urlList:
+            for url in range(3):
 
                 numUrl = random.randint(0, len(urlList) - 1)
                 url = urlList[numUrl]
@@ -71,7 +72,7 @@ class Crawler:
                         if nextUrl[0:4] == 'http' and not isIndexed.isIndexed(self, nextUrl):
                             print("Ссылка    подходящая ", nextUrl)
                             nextUrlSet.add(nextUrl)
-                            self.cursor.execute("INSERT INTO urlList (url) VALUES(?)", (nextUrl,))
+                            # self.cursor.execute("INSERT INTO urlList (url) VALUES(?)", (nextUrl,))
                             # Добавление связи этой свежей ссылки c текущей в linkBetweenURL
                             self.cursor.execute(
                                 f"INSERT INTO linkBetweenURL (fk_From_UrlId, fk_To_UrlId) VALUES ('{url}', '{nextUrl}')")

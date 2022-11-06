@@ -19,6 +19,8 @@ def addIndex(self, soup, url):
         wordid = getEntryId(self, 'wordId', 'wordList', 'word', word)
         self.conection.execute(
             "INSERT INTO wordlocation (fk_urlid,fk_wordid,location) values (%d,%d,%d)" % (urlid, wordid, i))
+        self.conection.execute(
+            "INSERT INTO linkWord (fk_wordId, fk_linkId) values (%d,%d)" % (wordid,urlid) )
 
     # проверить, была ли проиндексирован данных url   - isIndexed
     # если не был, то

@@ -25,8 +25,8 @@ print("--- %s seconds ---" % (time.time() - start_time))
 worddf = pd.DataFrame(metrics.wordMetrics)
 urldf = pd.DataFrame(metrics.urlMetrics)
 
-wordGraf = px.line(worddf)
-urlGraf = px.line(urldf)
+wordGraf = px.line(worddf, title = 'Количество добавленных слов за обход',  labels={'index':'Номер обхода','value':'Слова'})
+urlGraf = px.line(urldf, title = 'Количество добавленных ссылок за обход',  labels={'index':'Номер обхода','value':'Ссылки'})
 
 wordGraf.show()
 urlGraf.show()
