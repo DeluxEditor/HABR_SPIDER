@@ -1,6 +1,5 @@
 import sqlite3
 import bs4
-import random
 import datetime
 import requests
 import createDB
@@ -64,7 +63,7 @@ class Crawler:
                     else:
                         nextUrl = tagA.attrs['href']
                         if nextUrl[0:4] == 'http' and not isIndexed.isIndexed(self, nextUrl)\
-                                and nextUrl[-4:] != 'epub':
+                                and nextUrl[-4:] != 'epub' and nextUrl[-3:] != 'pdf':
                             print("Ссылка    подходящая ", nextUrl)
                             nextUrlSet.add(nextUrl)
                             # self.cursor.execute("INSERT INTO urlList (url) VALUES(?)", (nextUrl,))
