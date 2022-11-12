@@ -1,11 +1,9 @@
 import sqlite3 as sql
 import os
 
-"""
 cwd = os.getcwd()
 DBname = cwd + '/LR1_2.db'
-top_twelve = open("top-twelve.csv", "a")
-"""
+top_twelve = open("top-twelve.txt", "a")
 
 
 def topWord(dbName):
