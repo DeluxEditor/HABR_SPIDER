@@ -2,13 +2,19 @@
 def db_process_request(self, request):
     request = request.lower()
     wordlist = request.split(' ')
+    print(f"Ищем:\n{wordlist}\n")
+    if wordlist == '':
+        return None, None, -2, "Request split error: cannot split request"
 
     query, wordids = sql_query_compile(self, wordlist)
-    print(query)
+    print(f"Сформированный SQL запрос:\n{query}\n")
+    print(f"id Искомых слов:\n{wordids}\n")
 
     query_result = self.cursor.execute(query)
-    row = [i for i in query_result]
-    return row, wordids
+    urlid_wordloc_tuple = [i for i in query_result] # Результат - кортеж страниц с позициями искомых слов в них
+    exitcode = 0
+    description = ''
+    return urlid_wordloc_tuple, wordids, exitcode, description
 
 
 # Составление SQL-запроса для поиска id страниц, где встречаются искомые слова, в БД
