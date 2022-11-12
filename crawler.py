@@ -1,6 +1,5 @@
 import sqlite3
 import bs4
-import random
 import datetime
 import requests
 import createDB
