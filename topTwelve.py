@@ -1,4 +1,12 @@
 import sqlite3 as sql
+import os
+
+"""
+cwd = os.getcwd()
+DBname = cwd + '/LR1_2.db'
+top_twelve = open("top-twelve.csv", "a")
+"""
+
 
 def topWord(dbName):
     connection = sql.connect(dbName)
@@ -15,8 +23,10 @@ def topWord(dbName):
     )
     result = cursor.fetchall()
 
+    top_twelve.write('Top 20 words\n')
+
     for i in result:
-        print(i)
+        top_twelve.write(str(i)+'\n')
 
 def topUrl(dbName):
     connection = sql.connect(dbName)
@@ -33,5 +43,12 @@ def topUrl(dbName):
     )
     result = cursor.fetchall()
 
+    top_twelve.write('Top 20 urls\n')
+
     for i in result:
-        print(i)
+        top_twelve.write(str(i)+'\n')
+
+
+print(f'ТОП 20 слов запись\n')
+topWord(DBname)
+topUrl(DBname)
