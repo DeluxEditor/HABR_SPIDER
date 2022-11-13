@@ -33,19 +33,19 @@ def sql_query_compile(self, wordlist):
     query += querypart_compile(join)
     query += querypart_compile(condition)
 
-    return query ,wordids
+    return query, wordids
 
 
 # Нахождение id искомых слов
 def get_word_id(self, wordlist):
     wordids = list()
     for word in wordlist:
-        word_id = self.connection.execute(f"SELECT wordId from wordList where word = '{word}'").fetchone()
+        word_id = self.cursor.execute(f"SELECT wordId from wordList where word = '{word}'").fetchone()
         if word_id is None:
             continue
         else:
-            id = word_id[0]
-            wordids.append(id)
+            iid = word_id[0]
+            wordids.append(iid)
     return wordids
 
 
@@ -80,9 +80,9 @@ def compile_join(wordids):
 def compile_condition(wordids):
     condition = list()
     for idx in range(len(wordids)):
-        id = wordids[idx]
+        iid = wordids[idx]
         if idx == 0:
-            condition.append(f"WHERE word0.fk_wordId={id}")
+            condition.append(f"WHERE word0.fk_wordId={iid}")
             continue
-        condition.append(f"AND word{idx}.fk_wordId={id}")
+        condition.append(f"AND word{idx}.fk_wordId={iid}")
     return condition

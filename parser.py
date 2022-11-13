@@ -30,13 +30,15 @@ print("--- %s seconds ---" % (time.time() - start_time))
 worddf = pd.DataFrame(metrics.wordMetrics)
 urldf = pd.DataFrame(metrics.urlMetrics)
 
-wordGraf = px.line(worddf, title = 'Количество добавленных слов за обход',  labels={'index':'Номер обхода','value':'Слова'})
-urlGraf = px.line(urldf, title = 'Количество добавленных ссылок за обход',  labels={'index':'Номер обхода','value':'Ссылки'})
+wordGraf = px.line(worddf, title='Количество добавленных слов за обход',
+                   labels={'index': 'Номер обхода', 'value': 'Слова'})
+urlGraf = px.line(urldf, title='Количество добавленных ссылок за обход',
+                  labels={'index': 'Номер обхода', 'value': 'Ссылки'})
 
 wordGraf.show()
 urlGraf.show()
 
-print(f'ТОП 20 слов \n')
-topTwelve.topWord(DBname)
-print(f'\n ТОП 20 ссылок \n')
-topTwelve.topUrl(DBname)
+print("\nЗапись топ 20 слов и ссылок в файл...")
+logfilename = open("top-twelve.txt", "a")
+topTwelve.topWord(DBname, logfilename)
+topTwelve.topUrl(DBname, logfilename)

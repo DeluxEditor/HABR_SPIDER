@@ -1,12 +1,7 @@
 import sqlite3 as sql
-import os
-
-cwd = os.getcwd()
-DBname = cwd + '/LR1_2.db'
-top_twelve = open("top-twelve.txt", "a")
 
 
-def topWord(dbName):
+def topWord(dbName, logfilename):
     connection = sql.connect(dbName)
     cursor = connection.cursor()
     cursor.execute(
@@ -21,12 +16,13 @@ def topWord(dbName):
     )
     result = cursor.fetchall()
 
-    top_twelve.write('Top 20 words\n')
+    logfilename.write('Top 20 words\n')
 
     for i in result:
-        top_twelve.write(str(i)+'\n')
+        logfilename.write(str(i)+'\n')
 
-def topUrl(dbName):
+
+def topUrl(dbName, logfilename):
     connection = sql.connect(dbName)
     cursor = connection.cursor()
     cursor.execute(
@@ -41,12 +37,7 @@ def topUrl(dbName):
     )
     result = cursor.fetchall()
 
-    top_twelve.write('Top 20 urls\n')
+    logfilename.write('Top 20 urls\n')
 
     for i in result:
-        top_twelve.write(str(i)+'\n')
-
-
-print(f'ТОП 20 слов запись\n')
-topWord(DBname)
-topUrl(DBname)
+        logfilename.write(str(i)+'\n')

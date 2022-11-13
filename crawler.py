@@ -64,7 +64,7 @@ class Crawler:
                         nextUrl = tagA.attrs['href']
                         if nextUrl[0:4] == 'http' and not isIndexed.isIndexed(self, nextUrl)\
                                 and nextUrl[-4:] != 'epub' and nextUrl[-3:] != 'pdf':
-                            print("Ссылка    подходящая ", nextUrl)
+                            # print("Ссылка    подходящая ", nextUrl)
                             nextUrlSet.add(nextUrl)
                             # self.cursor.execute("INSERT INTO urlList (url) VALUES(?)", (nextUrl,))
                             # Добавление связи этой свежей ссылки c текущей в linkBetweenURL
@@ -72,7 +72,7 @@ class Crawler:
                                 f"INSERT INTO linkBetweenURL (fk_From_UrlId, fk_To_UrlId) VALUES ('{url}', '{nextUrl}')")
                             self.conection.commit()
                         else:
-                            print("Ссылка не подходящая ", nextUrl)
+                            # print("Ссылка не подходящая ", nextUrl)
                             pass
 
             urlList = list(nextUrlSet)
