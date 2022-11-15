@@ -26,6 +26,20 @@ class Crawler:
     isIndexed = isIndexed.isIndexed
     getTextOnly = textOnly.getTextOnly
 
+    def addLinkRef(self, urlFrom, urlTo):
+        urlFromId = #получить id о url
+        urlToId = #так же только для списка
+
+        self.cursor.execute(f"SELECT urlId FROM urlList WHERE url = {str(urlFrom)}")
+        idFrom = self.cursor.fetchone()
+        for i in range(len(urlTo)):
+            self.cursor.execute(f"SELECT urlId FROM urlList WHERE url = {str(urlTo[i])}")
+            idTo = self.cursor.fetchone()
+            if idTo != None and idFrom != idTo:
+                self.cursor.execute(f"INSERT INTO linkBetweenURL (fk_From_urlId, fk_To_urlId) VALUES ('{urlFromId}, {urlToId}')")
+        self.conection.commit()
+
+
 
     def crawl(self, urlList, maxDepth=1):
         for currDepth in range(maxDepth):
@@ -68,9 +82,7 @@ class Crawler:
                             nextUrlSet.add(nextUrl)
                             # self.cursor.execute("INSERT INTO urlList (url) VALUES(?)", (nextUrl,))
                             # Добавление связи этой свежей ссылки c текущей в linkBetweenURL
-                            self.cursor.execute(
-                                f"INSERT INTO linkBetweenURL (fk_From_UrlId, fk_To_UrlId) VALUES ('{url}', '{nextUrl}')")
-                            self.conection.commit()
+                            self.addLinkRef(url,nextUrl)
                         else:
                             # print("Ссылка не подходящая ", nextUrl)
                             pass
