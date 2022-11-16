@@ -3,6 +3,7 @@ import sqlite3 as sql
 
 # Создает БД с высчитанным pagerank для всех найденных пауком страниц
 def calculatepagerank(dbname, iterations=5):
+    global pr, urlid
     connection = sql.connect(dbname)
     cursor = connection.cursor()
     # стираем текущее содержимое таблицы PageRank
@@ -38,32 +39,37 @@ def calculatepagerank(dbname, iterations=5):
     connection.commit()
 
     for i in range(iterations):
-        print(f"Составление pagerank database. Итерация {i+1}")
-        for urlid in cursor.execute('SELECT urlId FROM urlList'):
+        print(f"Составление pagerank database. Итерация '{i+1}'")
+        for (urlid, ) in connection.execute("SELECT urlId FROM urlList"):
             pr = 0.15
-            links = cursor.execute(f'SELECT DISTINCT fk_From_UrlId FROM linkBetweenURL WHERE [fk_To_UrlId={urlid}]').fetchall()[0]
-            for linker in links:
-                # Находим ранг ссылающейся страницы
-                linkingpr = cursor.execute(f'SELECT score FROM pagerank WHERE urlid={linker}').fetchone()
-                # Находим общее число ссылок на ссылающейся странице
-                linkingcount = cursor.execute(f'SELECT count(*) FROM linkBetweenURL WHERE fk_From_UrlId={linker}').fetchone()
-                pr += 0.85 * (linkingpr / linkingcount)
-    cursor.execute(f'UPDATE pagerank SET score={pr} WHERE urlid={urlid}')
-    connection.commit()
+            links = cursor.execute(f"SELECT DISTINCT fk_From_urlId FROM linkBetweenURL WHERE fk_To_urlId='{urlid}'").fetchall()
+            if links != None:
+                for (linker,) in links:
+                    # Находим ранг ссылающейся страницы
+                    linkingpr = connection.execute(f"SELECT score FROM pagerank WHERE urlid='{linker}'").fetchone()[0]
+                    # Находим общее число ссылок на ссылающейся странице
+                    linkingcount = connection.execute(f"SELECT count (*) FROM linkBetweenURL WHERE fk_From_UrlId='{linker}'").fetchone()[0]
+
+                    print(f"count = '{str(linkingcount)}' \n pr='{str(linkingpr)}'")
+                    pr += 0.85 * (linkingpr / linkingcount)
+                    cursor.execute(f"UPDATE pagerank SET score='{pr}' WHERE urlid='{urlid}'")
+                    connection.commit()
+            else:
+                continue
+
+
 
 
 # Принимает значение pagerank из БД, нормализует и возвращает метрику
 def pagerankscore(dbname, urlids):
     connection = sql.connect(dbname)
     cursor = connection.cursor()
-    # Это надо переписать более понятным образом
-    pageranks = {}
-    for combination in urlids:
-        combination = cursor.execute(f'SELECT score FROM pagerank WHERE urlid={combination[0]}').fetchone()
+
+    pageranks = dict()
+    for urlid in urlids:
+        pageranks[urlid[0]] = connection.execute(f"select score from pagerank where urlid= '{urlid[0]}'").fetchone( )[0]
 
     maxrank = max(pageranks.values())   # Код нормализации переписать, когда разнесем эти функции
-
-    normalizedscore = {}
 
     for (url, score) in pageranks.items():
         normalizedscores = dict([(url, float(score) / maxrank)])
