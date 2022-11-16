@@ -11,7 +11,7 @@ def db_process_request(self, request):
     print(f"id Искомых слов:\n{wordids}\n")
 
     query_result = self.cursor.execute(query)
-    urlid_wordloc_tuple = [i for i in query_result] # Результат - кортеж страниц с позициями искомых слов в них
+    urlid_wordloc_tuple = [i for i in query_result]     # Результат - кортеж страниц с позициями искомых слов в них
     exitcode = 0
     description = ''
     return urlid_wordloc_tuple, wordids, exitcode, description

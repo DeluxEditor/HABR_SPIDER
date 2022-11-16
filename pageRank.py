@@ -43,7 +43,7 @@ def calculatepagerank(dbname, iterations=5):
         for (urlid, ) in connection.execute("SELECT urlId FROM urlList"):
             pr = 0.15
             links = cursor.execute(f"SELECT DISTINCT fk_From_urlId FROM linkBetweenURL WHERE fk_To_urlId='{urlid}'").fetchall()
-            if links != None:
+            if links is not None:
                 for (linker,) in links:
                     # Находим ранг ссылающейся страницы
                     linkingpr = connection.execute(f"SELECT score FROM pagerank WHERE urlid='{linker}'").fetchone()[0]
@@ -56,8 +56,6 @@ def calculatepagerank(dbname, iterations=5):
                 continue
 
 
-
-
 # Принимает значение pagerank из БД, нормализует и возвращает метрику
 def pagerankscore(dbname, urlids):
     connection = sql.connect(dbname)
@@ -65,11 +63,15 @@ def pagerankscore(dbname, urlids):
 
     pageranks = dict()
     for urlid in urlids:
-        pageranks[urlid[0]] = connection.execute(f"select score from pagerank where urlid= '{urlid[0]}'").fetchone( )[0]
+        pageranks[urlid[0]] = connection.execute(f"select score from pagerank where urlid= '{urlid[0]}'").fetchone()[0]
 
     maxrank = max(pageranks.values())   # Код нормализации переписать, когда разнесем эти функции
 
-    for (url, score) in pageranks.items():
-        normalizedscores = dict([(url, float(score) / maxrank)])
-        print(f"\nМетрика pagerank: \n{normalizedscores}\n")
-        return normalizedscores
+    # До исправлений return был в цикле и завершался после одного прохода
+    # Соответственно имели только одну ссылку в pageRank вместо всех что послали методу на обработку
+    # + было исправлено переопределение переменной-словаря каждый раз в цикле
+    normalizedscores = dict()
+    for (urlid, score) in pageranks.items():
+        normalizedscores[urlid] = float(score) / maxrank
+    print(f"\nМетрика pagerank: \n{normalizedscores}\n")
+    return normalizedscores

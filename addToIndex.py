@@ -40,6 +40,7 @@ def separateWords(text):
     # splitter = re.compile(str(text))
     return [s.lower() for s in re.split(r'\W+',text) if s!='']
 
+
 def getEntryId(self, rowName, tableName, fieldName, value, createnew=True):
     try:
         cur = self.conection.execute("SELECT %s FROM %s WHERE %s='%s'" % (rowName, tableName, fieldName, value))

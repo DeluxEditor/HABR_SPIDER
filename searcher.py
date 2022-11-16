@@ -27,7 +27,7 @@ class Searcher:
         pageSort.distance_score(urlids)
         pageSort.frequency_score(urlids)
         # Это надо будет переписать
-        pageRank.calculatepagerank(dbname)
+        # pageRank.calculatepagerank(dbname)
         pageRank.pagerankscore(dbname, urlids)
 
         return 0, ''
@@ -38,8 +38,9 @@ def main():
     request = "rambler рамблер"
 
     searcher = Searcher(dbname)
-    exitcode, description = searcher.request_search(dbname,request)
-    print (f"Search request finished with exitcode {exitcode}: {description}")
+    exitcode, description = searcher.request_search(dbname, request)
+    print(f"Search request finished with exitcode {exitcode}: {description}")
     exit(exitcode)
+
 
 main()
