@@ -49,8 +49,6 @@ def calculatepagerank(dbname, iterations=5):
                     linkingpr = connection.execute(f"SELECT score FROM pagerank WHERE urlid='{linker}'").fetchone()[0]
                     # Находим общее число ссылок на ссылающейся странице
                     linkingcount = connection.execute(f"SELECT count (*) FROM linkBetweenURL WHERE fk_From_UrlId='{linker}'").fetchone()[0]
-
-                    print(f"count = '{str(linkingcount)}' \n pr='{str(linkingpr)}'")
                     pr += 0.85 * (linkingpr / linkingcount)
                     cursor.execute(f"UPDATE pagerank SET score='{pr}' WHERE urlid='{urlid}'")
                     connection.commit()
