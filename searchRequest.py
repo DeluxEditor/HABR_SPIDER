@@ -7,9 +7,11 @@ def db_process_request(self, request):
         return None, None, -2, "Request split error: cannot split request"
 
     query, wordids = sql_query_compile(self, wordlist)
+    if len(wordids) == 0:
+        print("Ненаход...")
+        return None, None, -3, "cannot find request words in database"
     print(f"Сформированный SQL запрос:\n{query}\n")
     print(f"id Искомых слов:\n{wordids}\n")
-
     query_result = self.cursor.execute(query)
     urlid_wordloc_tuple = [i for i in query_result]     # Результат - кортеж страниц с позициями искомых слов в них
     exitcode = 0

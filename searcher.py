@@ -28,11 +28,11 @@ class Searcher:
         if request == '':
             exitcode = -1
             description = "Request error: empty request was found"
-            return exitcode, description
+            return exitcode, description, None
 
         urlids, worids, exitcode, description = searchRequest.db_process_request(self, request)
         if exitcode != 0:
-            return exitcode, description
+            return exitcode, description, None
 
         locscore = pageSort.location_score(urlids)
         distscore = pageSort.distance_score(urlids)
@@ -47,7 +47,8 @@ class Searcher:
         for key in locscore.keys():
             overallscore[key] = locscore[key]
             overallscore[key] += 0.8 * rankscore[key]
-            overallscore[key] += 0.6 * distscore[key]
+            if distscore is not None:
+                overallscore[key] += 0.6 * distscore[key]
             overallscore[key] += 0.4 * freqscore[key]
         overallscore = pageSort.score_normalization(overallscore)
         print(f"Итоговый рейтинг страниц: \n{overallscore}\n")
@@ -64,14 +65,14 @@ def main():
 
     searcher = Searcher(dbname)
     exitcode, description, result = searcher.request_search(dbname, request)
+    if exitcode != 0:
+        print(f"Search request finished with exitcode {exitcode}: {description}")
+        exit(exitcode)
     print(f"Результат выдачи: ")
     i = 0
     for url in result:
         i += 1
         print(f'{i}: {url}')
-
-    print(f"Search request finished with exitcode {exitcode}: {description}")
-    exit(exitcode)
 
 
 main()
