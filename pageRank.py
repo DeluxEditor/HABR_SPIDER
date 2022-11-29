@@ -72,6 +72,6 @@ def pagerankscore(dbname, urlids):
     # + было исправлено переопределение переменной-словаря каждый раз в цикле
     normalizedscores = dict()
     for (urlid, score) in pageranks.items():
-        normalizedscores[urlid] = float(score) / maxrank
+        normalizedscores[urlid] = round(float(score) / maxrank, 4)
     print(f"\nМетрика pagerank: \n{normalizedscores}\n")
     return normalizedscores

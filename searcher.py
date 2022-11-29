@@ -13,6 +13,17 @@ class Searcher:
     def __del__(self):
         self.connection.close()
 
+    def resultlist_doing(self, pagescore):
+        pagescore = dict(sorted(pagescore.items(), key=lambda item: item[1]))
+        urllist = list()
+        for key, value in pagescore.items():
+            url = self.cursor.execute(
+                f"SELECT url from urlList where urlId = '{key}'"
+            ).fetchone()
+            urllist.append(url)
+        urllist.reverse()
+        return urllist
+
     def request_search(self, dbname, request):
         if request == '':
             exitcode = -1
@@ -23,14 +34,28 @@ class Searcher:
         if exitcode != 0:
             return exitcode, description
 
-        pageSort.location_score(urlids)
-        pageSort.distance_score(urlids)
-        pageSort.frequency_score(urlids)
+        locscore = pageSort.location_score(urlids)
+        distscore = pageSort.distance_score(urlids)
+        freqscore = pageSort.frequency_score(urlids)
         # Это надо будет переписать
-        # pageRank.calculatepagerank(dbname)
-        pageRank.pagerankscore(dbname, urlids)
+        recalcpagerank = 0
+        if recalcpagerank:
+            pageRank.calculatepagerank(dbname)
+        rankscore = pageRank.pagerankscore(dbname, urlids)
 
-        return 0, ''
+        overallscore = dict()
+        for key in locscore.keys():
+            overallscore[key] = locscore[key]
+            overallscore[key] += 0.8 * rankscore[key]
+            overallscore[key] += 0.6 * distscore[key]
+            overallscore[key] += 0.4 * freqscore[key]
+        overallscore = pageSort.score_normalization(overallscore)
+        print(f"Итоговый рейтинг страниц: \n{overallscore}\n")
+
+        return 0, '', self.resultlist_doing(overallscore)
+
+    def bestpage_print(self, pagescore):
+        pass
 
 
 def main():
@@ -38,7 +63,13 @@ def main():
     request = "rambler рамблер"
 
     searcher = Searcher(dbname)
-    exitcode, description = searcher.request_search(dbname, request)
+    exitcode, description, result = searcher.request_search(dbname, request)
+    print(f"Результат выдачи: ")
+    i = 0
+    for url in result:
+        i += 1
+        print(f'{i}: {url}')
+
     print(f"Search request finished with exitcode {exitcode}: {description}")
     exit(exitcode)
 

@@ -53,6 +53,7 @@ def frequency_score(urlids):
                 frequency_scoredict[key] = value + 1
     frequency_scoredict = score_normalization(frequency_scoredict, desc_normalize=True)
     print(f"Метрика частоты искомых слов: \n{frequency_scoredict}\n")
+    return frequency_scoredict
 
 
 # Нормализация метрики
