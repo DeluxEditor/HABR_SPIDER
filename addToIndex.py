@@ -1,14 +1,14 @@
 import re
-import textOnly
 import isIndexed
 import sqlite3
 
 
+# Функция индексации слов
 def addIndex(self, soup, url):
     if isIndexed.isIndexed(self, url): return
     print('Индексируется ' + url)
 
-    text = textOnly.getTextOnly(self, soup)  # Получить список слов
+    text = getTextOnly(soup)  # Получить список слов
     words = separateWords(text)
     urlid = getEntryId(self, 'urlId', 'urlList', 'url', url)  # Получить идентификатор URL
 
@@ -22,20 +22,23 @@ def addIndex(self, soup, url):
         self.conection.execute(
             "INSERT INTO linkWord (fk_wordId, fk_linkId) values (%d,%d)" % (wordid,urlid) )
 
-    # проверить, была ли проиндексирован данных url   - isIndexed
-    # если не был, то
-    #   получить тестовое содержимое страницы - getTextOnly
-    #   получить список отдельных слов        - separateWords
-    #   Для каждого найденного слова currentword в списке wordList[]
-    #     получить id_слова для currentword   -  getEntryId(‘Таблица wordlist в БД’, ‘столбец word’, ‘currentword ’)
-    #     внести данные id_слова + id_url + положение_слова в таблицу wordLocation
+
+# Разделение страницы на список слов в ней
+def getTextOnly(soup):
+    v = soup.text
+    if v == None:
+        c = soup.contents
+        resulttext = ''
+        for t in c:
+            subtext = getTextOnly(t)
+            resulttext += subtext + '\n'
+        return resulttext
+    else:
+        return v.strip()
 
 
+# Разделение слов по маске и запись их в нижний регистр
 def separateWords(text):
-    #text = re.sub(r"\',\(,\),\", [@|$|#|%|&]"," ", text)
-    # splitter = re.compile(str(text))
-    #return [ s.lower() for s in re.split(r'\W+',str(splitter)) if s!='']
-
     text = re.sub(r"\',\(,\),\", [@|$|#|%|&]"," ", text)
     # splitter = re.compile(str(text))
     return [s.lower() for s in re.split(r'\W+',text) if s!='']

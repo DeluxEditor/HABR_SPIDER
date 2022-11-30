@@ -5,18 +5,18 @@ import requests
 import createDB
 import addToIndex
 import metrics
-import textOnly
 import isIndexed
 
-listUnwantedItems = ['script', 'style', 'http://www.facebook.com','https://www.facebook.com',
-                                     'http://twitter.com','https://twitter.com']
-
+listUnwantedItems = ['script', 'style', 'http://www.facebook.com', 'https://www.facebook.com',
+                     'http://twitter.com', 'https://twitter.com']
 class Crawler:
+    # Действия при создании экземпляра класса
     def __init__(self, dbFileName, blackList):
         self.conection = sqlite3.connect(dbFileName)
         self.cursor = self.conection.cursor()
         self.ignorewords = blackList
 
+    # Действия при уничтожении экземпляра класса
     def __del__(self):
         self.conection.commit()
         self.conection.close()
@@ -24,8 +24,8 @@ class Crawler:
     initDB = createDB.createDB
     addIndex = addToIndex.addIndex
     isIndexed = isIndexed.isIndexed
-    getTextOnly = textOnly.getTextOnly
 
+    # Добавление связи между ссылками в БД
     def addLinkRef(self, urlFrom, urlTo):
         try:
             self.cursor.execute(f"SELECT urlId FROM urlList WHERE url = '{urlFrom}'")
@@ -33,19 +33,18 @@ class Crawler:
             self.cursor.execute(f"SELECT urlId FROM urlList WHERE url = '{str(urlTo)}'")
             idTo = self.cursor.fetchone()[0]
             if idTo != None and idFrom != idTo:
-                self.cursor.execute(f"INSERT INTO linkBetweenURL (fk_From_urlId, fk_To_urlId) VALUES ('{idFrom}', '{idTo}')")
+                self.cursor.execute(
+                    f"INSERT INTO linkBetweenURL (fk_From_urlId, fk_To_urlId) VALUES ('{idFrom}', '{idTo}')")
             self.conection.commit()
         except:
             pass
 
-
-
+    # Главный метод crawl
     def crawl(self, urlList, maxDepth=1):
         for currDepth in range(maxDepth):
             print("===========Глубина обхода ", currDepth, "===========")
             counter = 0
             nextUrlSet = set()
-
             for url in urlList[:]:
                 counter += 1
                 curentTime = datetime.datetime.now().time()
@@ -75,13 +74,10 @@ class Crawler:
                         continue
                     else:
                         nextUrl = tagA.attrs['href']
-                        if nextUrl[0:4] == 'http' and not isIndexed.isIndexed(self, nextUrl)\
+                        if nextUrl[0:4] == 'http' and not isIndexed.isIndexed(self, nextUrl) \
                                 and nextUrl[-4:] != 'epub' and nextUrl[-3:] != 'pdf':
                             # print("Ссылка    подходящая ", nextUrl)
                             nextUrlSet.add(nextUrl)
-                            # self.cursor.execute("INSERT INTO urlList (url) VALUES(?)", (nextUrl,))
-                            # Добавление связи этой свежей ссылки c текущей в linkBetweenURL
-
                         else:
                             # print("Ссылка не подходящая ", nextUrl)
                             pass
