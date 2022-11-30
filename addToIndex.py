@@ -55,3 +55,15 @@ def getEntryId(self, rowName, tableName, fieldName, value, createnew=True):
             return res[0]
     except sqlite3.OperationalError:
         return 0
+
+def getTextOnly(soup):
+    v = soup.text
+    if v == None:
+        c = soup.contents
+        resulttext = ''
+        for t in c:
+            subtext = getTextOnly(t)
+            resulttext += subtext + '\n'
+        return resulttext
+    else:
+        return v.strip()

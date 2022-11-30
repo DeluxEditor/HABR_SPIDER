@@ -3,6 +3,7 @@ import os
 import searchRequest
 import pageSort
 import pageRank
+import colorHTML
 
 
 class Searcher:
@@ -21,7 +22,7 @@ class Searcher:
                 f"SELECT url from urlList where urlId = '{key}'"
             ).fetchone()
             urllist.append(url)
-        urllist.reverse()
+            urllist.reverse()
         return urllist
 
     def request_search(self, dbname, request):
@@ -70,9 +71,14 @@ def main():
         exit(exitcode)
     print(f"Результат выдачи: ")
     i = 0
+
     for url in result:
         i += 1
         print(f'{i}: {url}')
 
+    for i in range(3):
+        url = result[i][0]
+        markedHTMLFilename = "getMarkedHTML.html"
+        colorHTML.create_Marked_File(markedHTMLFilename, url, request)
 
 main()

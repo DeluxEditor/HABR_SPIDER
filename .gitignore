@@ -4,3 +4,4 @@ DB_filename.db
 .vs
 venv
 top-twelve.txt
+/getMarkedHTML.html

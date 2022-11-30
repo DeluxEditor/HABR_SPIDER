@@ -37,7 +37,7 @@ CREATE TABLE IF NOT EXISTS linkBetweenURL (
 	FOREIGN KEY (fk_To_UrlId) REFERENCES urlList (urlId)
 );
 
--- Слова, составляющие ссылку (???)
+-- Слова, составляющие ссылку
 CREATE TABLE IF NOT EXISTS linkWord (
     linkWordId INTEGER PRIMARY KEY AUTOINCREMENT,
     fk_wordId INTEGER,
