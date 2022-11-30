@@ -23,6 +23,7 @@ def create_Marked_File(markedHTMLFilename, url, QueryList):
 
     # Получения текста страницы с знаками переноса строк и препинания. Прием с использованием регулярных выражений
     wordList = re.compile("[\\w]+|[\\n.,!?:—]").findall(Text)
+    print(wordList)
 
     # Получить html-код с маркировкой искомых слов
     htmlCode = getMarkedHTML(wordList, QueryList)
@@ -35,24 +36,14 @@ def create_Marked_File(markedHTMLFilename, url, QueryList):
 
 def getMarkedHTML(wordList, queryList):
     text = []
-    for query in queryList:
-        i=1
-
-        for word in wordList:
-            if word == query:
-                text.append('<span style="background-color:red;">'+query+'</span>')
-            else:
-                text.append(str(word))
-
-
-
-
-    htmlCodebegin = "<!DOCTYPE html><html><head></head><body><p>"
-
+    i = 0
+    htmlCodebegin = "<!DOCTYPE html><html><head></head><body>"
+    for word in wordList:
+        if word in queryList:
+            text.append(f'<span style="background-color:red;">{word}</span>')
+        else:
+            text.append(str(word))
+        i += 1
     htmlCodetext = htmlCodebegin + str(" ".join(map(str, text)))
-
-    htmlCode = htmlCodetext+"</p></body></html>"
-
-
+    htmlCode = htmlCodetext+"</body></html>"
     return htmlCode
-
